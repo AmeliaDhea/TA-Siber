@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluasi Kinerja Guru</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Evaluasi Kinerja Guru</h1>
+        <form id="evaluasiForm">
+            <label for="guruID">ID Guru:</label>
+            <input type="number" id="guruID" name="guruID" required>
+
+            <label for="tanggalMulai">Tanggal Mulai:</label>
+            <input type="date" id="tanggalMulai" name="tanggalMulai" required>
+
+            <label for="tanggalAkhir">Tanggal Akhir:</label>
+            <input type="date" id="tanggalAkhir" name="tanggalAkhir" required>
+
+            <button type="submit">Lihat Evaluasi</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script src="javascript.js"></script>
+</body>
+</html>

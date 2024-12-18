@@ -1,0 +1,5 @@
+{
+    "require": {
+        "php2wsdl/php2wsdl": "^0.7.0"
+    }
+}

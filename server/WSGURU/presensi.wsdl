@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:tns="http://localhost/wsguru/server.php"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/"
+             name="Presensi"
+             targetNamespace="http://localhost/wsguru/server.php">
+    <types>
+        <xsd:schema targetNamespace="http://localhost/wsguru/server.php">
+            <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+        </xsd:schema>
+    </types>
+
+    <message name="getEvaluasiKinerjaIn">
+        <part name="guruID" type="xsd:int"/>
+        <part name="tanggalMulai" type="xsd:dateTime"/>
+        <part name="tanggalAkhir" type="xsd:dateTime"/>
+    </message>
+
+    <message name="getEvaluasiKinerjaOut">
+        <part name="guruID" type="xsd:int"/>
+        <part name="totalDurasi" type="xsd:int"/>
+        <part name="status" type="xsd:string"/>
+        <part name="recommendation" type="xsd:string"/>
+    </message>
+
+    <portType name="PresensiPort">
+        <operation name="getEvaluasiKinerja">
+            <input message="tns:getEvaluasiKinerjaIn"/>
+            <output message="tns:getEvaluasiKinerjaOut"/>
+        </operation>
+    </portType>
+
+    <binding name="PresensiBinding" type="tns:PresensiPort">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="getEvaluasiKinerja">
+            <soap:operation soapAction="http://localhost/wsguru/server.php#getEvaluasiKinerja"/>
+            <input>
+                <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://localhost/wsguru/server.php"/>
+            </input>
+            <output>
+                <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://localhost/wsguru/server.php"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="PresensiService">
+        <port name="PresensiPort" binding="tns:PresensiBinding">
+            <soap:address location="http://localhost/wsguru/server.php"/>
+        </port>
+    </service>
+</definitions>
