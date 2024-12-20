@@ -1,4 +1,43 @@
 <?php
+session_start();
+
+// Rate Limiting Configuration
+$request_limit = 5; // Maksimal permintaan
+$time_window = 60;  // Waktu jendela dalam detik
+
+// Inisialisasi sesi permintaan jika belum ada
+if (!isset($_SESSION['request_times'])) {
+    $_SESSION['request_times'] = [];
+}
+
+// Tambahkan timestamp saat ini ke daftar permintaan
+$_SESSION['request_times'][] = time();
+
+// Hapus timestamp lama yang sudah berada di luar jendela waktu
+$_SESSION['request_times'] = array_filter(
+    $_SESSION['request_times'],
+    function ($timestamp) use ($time_window) {
+        return $timestamp >= time() - $time_window;
+    }
+);
+
+// Jika jumlah permintaan melebihi batas, kirim respons error
+if (count($_SESSION['request_times']) > $request_limit) {
+    header('Content-Type: application/json'); // Tentukan tipe konten sebagai JSON
+    http_response_code(429); // Tetapkan kode status HTTP untuk Too Many Requests
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Terlalu banyak permintaan. Coba lagi nanti.',
+        'retry_after' => $time_window - (time() - reset($_SESSION['request_times'])), // Waktu tunggu hingga permintaan berikutnya diizinkan
+    ]);
+    exit;
+}
+
+// Proses normal di sini
+header('Content-Type: application/json');
+echo json_encode(['status' => 'success', 'message' => 'Permintaan berhasil.']);
+exit;
+
 if (isset($_GET['nip'])) {
     header('Content-Type: application/json');
 
@@ -81,90 +120,3 @@ if (isset($_GET['nip'])) {
     exit;
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Gaji Guru</title>
-</head>
-<body>
-    <div>
-        <h3>Masukkan NIP untuk Data Gaji</h3>
-        <input type="text" id="nipInput" placeholder="Masukkan NIP">
-        <button onclick="getGaji(document.getElementById('nipInput').value)">Ambil Data Gaji</button>
-    </div>
-
-    <div>
-        <h3>Data Gaji</h3>
-        <table border="1" id="gajiTable">
-            <thead>
-                <tr>
-                    <th>NIP</th>
-                    <th>Tanggal</th>
-                    <th>Durasi Kerja (menit)</th>
-                    <th>Gaji</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <p id="totalGaji"></p>
-    </div>
-
-    <script>
-        async function getGaji(nip) {
-            if (nip.trim() === "") {
-                alert("NIP tidak boleh kosong.");
-                return;
-            }
-
-            const nipPattern = /^[0-9]{8}$/;
-            if (!nipPattern.test(nip)) {
-                alert("Format NIP tidak valid. Harap masukkan NIP 8 digit.");
-                return;
-            }
-
-            const url = `?nip=${nip}`;
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.status} - ${response.statusText}`);
-                }
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    displayGaji(data);
-                } else {
-                    alert(data.message);  // Tampilkan pesan jika gagal
-                }
-            } catch (error) {
-                console.error("Fetch Error:", error.message);
-                alert("Terjadi kesalahan saat mengambil data.");
-            }
-        }
-
-        function displayGaji(data) {
-            const tableBody = document.querySelector("#gajiTable tbody");
-            tableBody.innerHTML = ""; // Menghapus tabel sebelumnya
-
-            // Menampilkan data gaji
-            data.gaji_data.forEach(item => {
-                const row = `
-                    <tr>
-                        <td>${item.nip}</td>
-                        <td>${item.tanggal}</td>
-                        <td>${item.durasi_menit} menit</td>
-                        <td>Rp ${item.gaji}</td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-
-            // Menampilkan total gaji
-            const totalGajiElement = document.getElementById("totalGaji");
-            totalGajiElement.innerText = `Total Gaji: Rp ${data.total_gaji}`;
-        }
-    </script>
-</body>
-</html>

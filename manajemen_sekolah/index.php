@@ -1,5 +1,33 @@
 <?php
+
 session_start();
+
+// Atur Batas Permintaan
+$request_limit = 5;
+$time_window = 60; // Waktu tunggu dalam detik
+
+if (!isset($_SESSION['request_times'])) {
+    $_SESSION['request_times'] = [];
+}
+
+// Bersihkan permintaan lama
+$_SESSION['request_times'] = array_filter($_SESSION['request_times'], function ($timestamp) use ($time_window) {
+    return $timestamp >= time() - $time_window;
+});
+
+// Tambahkan permintaan baru
+$_SESSION['request_times'][] = time();
+
+if (count($_SESSION['request_times']) > $request_limit) {
+    header('Content-Type: application/json');
+    http_response_code(429); // Too Many Requests
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Terlalu banyak permintaan. Coba lagi nanti.',
+        'retry_after' => $time_window - (time() - reset($_SESSION['request_times'])),
+    ]);
+    exit;
+}
 
 // Koneksi Database
 $host = "localhost:3308";
@@ -167,6 +195,7 @@ $menu = isset($_GET['menu']) ? $_GET['menu'] : 'home';
                             // Menghapus 'Rp.' dan titik ribuan (jika ada), serta mengganti koma dengan titik sebagai pemisah desimal
                             $gaji = str_replace(['Rp.', '.', ','], ['', '', '.'], $row['gaji']); // Menghapus Rp., titik ribuan, dan koma (untuk desimal)
                             
+
                             // Pastikan gaji diubah menjadi float dan sesuai format angka
                             $gaji = floatval($gaji); // Mengonversi menjadi angka desimal
                             
@@ -177,6 +206,7 @@ $menu = isset($_GET['menu']) ? $_GET['menu'] : 'home';
                                     <td>Rp. " . number_format($gaji, 0, ',', '.') . "</td>
                                   </tr>";
                             
+
                             // Jumlahkan gaji ke total
                             $totalGaji += $gaji;
                         }
