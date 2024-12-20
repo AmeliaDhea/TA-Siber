@@ -170,7 +170,7 @@ $menu = isset($_GET['menu']) ? $_GET['menu'] : 'home';
             $bulan = date('Y-m');
             
             // URL API untuk mengambil data gaji berdasarkan NIP
-            $api_url = "http://localhost/TATST/server/server.php?nip=$nipCari&bulan=$bulan"; // Sesuaikan dengan URL API Anda
+            $api_url = "http://localhost/Siber/server/server.php?nip=$nipCari&bulan=$bulan"; // Sesuaikan dengan URL API Anda
 
             // Menggunakan cURL untuk memanggil API
             $curl = curl_init();
